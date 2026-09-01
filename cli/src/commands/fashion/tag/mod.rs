@@ -25,6 +25,7 @@ impl Args {
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
     /// List existing tags.
+    #[command(visible_alias = "ls")]
     List(list::Command),
     /// Remove unused tags.
     Clean(clean::Command),

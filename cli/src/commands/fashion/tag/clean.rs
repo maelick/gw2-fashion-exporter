@@ -4,6 +4,8 @@ use crate::commands;
 
 #[derive(clap::Args, Debug)]
 pub struct Command {
+    #[arg(from_global)]
+    clipboard: bool,
 }
 
 #[async_trait]

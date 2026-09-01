@@ -1,11 +1,21 @@
 use clap::{Args, ValueEnum};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-pub enum Format {
-    /// Based on the output filename extension (default to CSV if missing filename or unknown extension)
+pub enum DataFormat {
+    /// Auto detection
     Auto,
     /// CSV
     Csv,
+    /// JSON
+    Json,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub enum ChatLinkFormat {
+    /// Auto detection
+    Auto,
+    /// CSV
+    Chat,
     /// JSON
     Json,
 }

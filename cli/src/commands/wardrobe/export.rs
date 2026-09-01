@@ -18,9 +18,9 @@ pub struct Command {
     #[clap(hide_env_values = true)]
     api_key: Option<String>,
 
-    /// Output format
-    #[arg(short, long, value_enum, default_value_t = args::Format::Auto, display_order = 3)]
-    format: args::Format,
+    /// Output format. Auto is based on the output filename extension (default to CSV if missing filename or unknown extension).
+    #[arg(short, long, value_enum, default_value_t = args::DataFormat::Auto, display_order = 3)]
+    format: args::DataFormat,
 
     /// Filename to use as output
     #[arg(short, long, display_order = 3)]
@@ -82,24 +82,24 @@ impl Command {
 
     fn output_equipments(&self, equipments: Vec<ExportedEquipment>) -> anyhow::Result<()> {
         let format = match self.format {
-            args::Format::Auto => self.detect_format(),
+            args::DataFormat::Auto => self.detect_format(),
             _ => self.format,
         };
         match format {
-            args::Format::Csv => self.output_csv(equipments)?,
-            args::Format::Json => self.output_json(equipments)?,
+            args::DataFormat::Csv => self.output_csv(equipments)?,
+            args::DataFormat::Json => self.output_json(equipments)?,
             _ => todo!(),
         };
         Ok(())
     }
 
-    fn detect_format(&self) -> args::Format {
+    fn detect_format(&self) -> args::DataFormat {
         match &self.output {
             Some(path) => match path.extension() {
-                Some(ext) if ext == "json" => args::Format::Json,
-                _ => args::Format::Csv,
+                Some(ext) if ext == "json" => args::DataFormat::Json,
+                _ => args::DataFormat::Csv,
             },
-            None => args::Format::Csv,
+            None => args::DataFormat::Csv,
         }
     }
 

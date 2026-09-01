@@ -1,5 +1,6 @@
 use crate::commands::Command;
 
+mod args;
 mod create;
 mod get;
 mod list;
@@ -46,11 +47,13 @@ pub enum Commands {
     /// Patch an existing fashion, overriding only provided fields.
     Patch(patch::Command),
     /// List existing fashion templates.
+    #[command(visible_alias = "ls")]
     List(list::Command),
     /// Get or set the wardrobe template of a fashion template.
     Wardrobe(wardrobe::Args),
     /// Get or set the travel template of a fashion template.
     Travel(travel::Args),
     /// Manage fashion template tags
+    #[command(visible_alias = "tags")]
     Tag(tag::Args),
 }

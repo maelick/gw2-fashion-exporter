@@ -1,4 +1,5 @@
 mod args;
+mod fashion;
 mod read;
 mod travel;
 mod wardrobe;
@@ -11,6 +12,8 @@ pub enum Commands {
     Wardrobe(wardrobe::Args),
     /// Travel template commands
     Travel(travel::Args),
+    /// Fashion template commands
+    Fashion(fashion::Args),
 }
 
 impl Commands {
@@ -19,6 +22,7 @@ impl Commands {
             Commands::Read(cmd) => cmd,
             Commands::Wardrobe(args) => args.command(),
             Commands::Travel(args) => args.command(),
+            Commands::Fashion(args) => args.command(),
         }
     }
 

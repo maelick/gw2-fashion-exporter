@@ -1,5 +1,3 @@
-use async_trait::async_trait;
-
 mod args;
 mod read;
 mod travel;
@@ -23,10 +21,16 @@ impl Commands {
             Commands::Travel(args) => args.command(),
         }
     }
+
+    pub async fn execute(&self) -> anyhow::Result<()> {
+        match self {
+            Commands::Read(cmd) => cmd.execute().await,
+            Commands::Wardrobe(args) => args.execute().await,
+            Commands::Travel(args) => args.execute().await,
+        }
+    }
 }
 
-#[async_trait]
 pub trait Command: std::fmt::Debug {
     fn name(&self) -> &str;
-    async fn execute(&self) -> anyhow::Result<()>;
 }

@@ -40,7 +40,7 @@ impl Cli {
     async fn execute(&self) {
         let cmd = self.command.as_command();
         tracing::debug!(message = "Executing command", name = cmd.name(), args = ?cmd);
-        match cmd.execute().await {
+        match self.command.execute().await {
             Ok(_) => {
                 tracing::debug!(message = "Command successful", name = cmd.name())
             }

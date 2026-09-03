@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use clap::Args;
 use gw2fashionista_appearance::gw2::{equipment::Equipment, import::Importer, resolve::Resolver};
 use gw2fashionista_chatlink::ChatLinkError;
@@ -39,14 +38,15 @@ pub struct Command {
     concurrency: Option<u8>,
 }
 
-#[async_trait]
 impl commands::Command for Command {
     fn name(&self) -> &str {
         "wardrobe-export"
     }
+}
 
+impl Command {
     #[tracing::instrument(name = "wardrobe-export", skip_all)]
-    async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self) -> anyhow::Result<()> {
         let api_key = self.api_key.as_ref().unwrap();
         let importer = Importer::with_api_key(api_key);
 
@@ -70,9 +70,7 @@ impl commands::Command for Command {
             resolved.iter().map(|e| self.export_equipment(e)).collect();
         self.output_equipments(exported?)
     }
-}
 
-impl Command {
     fn export_equipment(&self, equipment: &Equipment) -> Result<ExportedEquipment, ChatLinkError> {
         let equipment = ExportedEquipment::new(equipment)?;
         if !self.no_default_name {

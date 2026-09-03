@@ -1,5 +1,3 @@
-use async_trait::async_trait;
-
 use crate::commands::{self, args::DataFormat, fashion::args::FashionFields};
 
 #[derive(clap::Args, Debug)]
@@ -19,14 +17,15 @@ pub struct Command {
     format: DataFormat,
 }
 
-#[async_trait]
 impl commands::Command for Command {
     fn name(&self) -> &str {
         "fashion-patch"
     }
+}
 
+impl Command {
     #[tracing::instrument(name = "fashion-patch", skip_all)]
-    async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self) -> anyhow::Result<()> {
         todo!()
     }
 }

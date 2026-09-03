@@ -1,5 +1,3 @@
-use async_trait::async_trait;
-
 use crate::commands::{self, args::DataFormat};
 
 #[derive(clap::Args, Debug)]
@@ -24,14 +22,15 @@ pub struct Command {
     contains: Vec<String>,
 }
 
-#[async_trait]
 impl commands::Command for Command {
     fn name(&self) -> &str {
         "fashion-tag-list"
     }
+}
 
+impl Command {
     #[tracing::instrument(name = "fashion-tag-list", skip_all)]
-    async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self) -> anyhow::Result<()> {
         todo!()
     }
 }

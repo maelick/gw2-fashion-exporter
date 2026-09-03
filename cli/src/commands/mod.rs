@@ -31,6 +31,7 @@ impl Commands {
             Commands::Read(cmd) => cmd.execute().await,
             Commands::Wardrobe(args) => args.execute().await,
             Commands::Travel(args) => args.execute().await,
+            Commands::Fashion(args) => args.execute().await,
         }
     }
 }

@@ -16,6 +16,13 @@ impl Args {
             Commands::Set(cmd) => cmd,
         }
     }
+
+    pub async fn execute(&self) -> anyhow::Result<()> {
+        match &self.command {
+            Commands::Get(cmd) => cmd.execute().await,
+            Commands::Set(cmd) => cmd.execute().await,
+        }
+    }
 }
 
 #[derive(clap::Subcommand, Debug)]

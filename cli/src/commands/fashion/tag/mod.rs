@@ -20,6 +20,15 @@ impl Args {
             Commands::Remove(cmd) => cmd,
         }
     }
+
+    pub async fn execute(&self) -> anyhow::Result<()> {
+        match &self.command {
+            Commands::List(cmd) => cmd.execute().await,
+            Commands::Clean(cmd) => cmd.execute().await,
+            Commands::Add(cmd) => cmd.execute().await,
+            Commands::Remove(cmd) => cmd.execute().await,
+        }
+    }
 }
 
 #[derive(clap::Subcommand, Debug)]

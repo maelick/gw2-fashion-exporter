@@ -1,5 +1,3 @@
-use async_trait::async_trait;
-
 use crate::commands::{self, args::ChatLinkFormat, fashion::args::FashionIdentifier};
 
 #[derive(clap::Args, Debug)]
@@ -16,14 +14,15 @@ pub struct Command {
     format: ChatLinkFormat,
 }
 
-#[async_trait]
 impl commands::Command for Command {
     fn name(&self) -> &str {
         "fashion-travel-set"
     }
+}
 
+impl Command {
     #[tracing::instrument(name = "fashion-travel-set", skip_all)]
-    async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self) -> anyhow::Result<()> {
         todo!()
     }
 }

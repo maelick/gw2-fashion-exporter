@@ -934,6 +934,7 @@ name = "gw2fashionista-cli"
 version = "0.3.0"
 dependencies = [
  "anyhow",
+ "bon",
  "clap",
  "clap-verbosity-flag",
  "csv",

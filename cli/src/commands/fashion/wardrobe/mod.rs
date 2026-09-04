@@ -1,4 +1,4 @@
-use crate::commands::Command;
+use crate::{commands::Command, environment::Environment};
 
 mod get;
 mod set;
@@ -17,10 +17,10 @@ impl Args {
         }
     }
 
-    pub async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self, env: Environment) -> anyhow::Result<()> {
         match &self.command {
-            Commands::Get(cmd) => cmd.execute().await,
-            Commands::Set(cmd) => cmd.execute().await,
+            Commands::Get(cmd) => cmd.execute(env).await,
+            Commands::Set(cmd) => cmd.execute(env).await,
         }
     }
 }

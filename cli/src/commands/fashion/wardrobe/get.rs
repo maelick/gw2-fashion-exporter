@@ -1,4 +1,7 @@
-use crate::commands::{self, args::ChatLinkFormat, fashion::args::FashionIdentifier};
+use crate::{
+    commands::{self, args::ChatLinkFormat, fashion::args::FashionIdentifier},
+    environment::Environment,
+};
 
 #[derive(clap::Args, Debug)]
 #[command(mut_group("identifier", |g| g.required(true)))]
@@ -22,7 +25,7 @@ impl commands::Command for Command {
 
 impl Command {
     #[tracing::instrument(name = "fashion-wardrobe-get", skip_all)]
-    pub async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self, _env: Environment) -> anyhow::Result<()> {
         todo!()
     }
 }

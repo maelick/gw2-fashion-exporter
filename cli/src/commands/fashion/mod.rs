@@ -1,4 +1,6 @@
-use crate::commands::Command;
+use std::path::PathBuf;
+
+use crate::{commands::Command, environment::Environment};
 
 mod args;
 mod create;
@@ -19,6 +21,11 @@ pub struct Args {
     /// If any other data is also provided on stdin or as arguments, it overrides the data from the clipboard.
     #[arg(long, global = true)]
     clipboard: bool,
+
+    /// GW2 API key
+    #[arg(long = "db", env = "GW2FASHIONISTA_DB", required = true)]
+    #[clap(hide_env_values = false)]
+    db_path: PathBuf,
 }
 
 impl Args {
@@ -36,15 +43,16 @@ impl Args {
     }
 
     pub async fn execute(&self) -> anyhow::Result<()> {
+        let env = Environment::builder().db_path(&self.db_path).build();
         match &self.command {
-            Commands::Create(cmd) => cmd.execute().await,
-            Commands::Get(cmd) => cmd.execute().await,
-            Commands::Set(cmd) => cmd.execute().await,
-            Commands::Patch(cmd) => cmd.execute().await,
-            Commands::List(cmd) => cmd.execute().await,
-            Commands::Wardrobe(args) => args.execute().await,
-            Commands::Travel(args) => args.execute().await,
-            Commands::Tag(args) => args.execute().await,
+            Commands::Create(cmd) => cmd.execute(env).await,
+            Commands::Get(cmd) => cmd.execute(env).await,
+            Commands::Set(cmd) => cmd.execute(env).await,
+            Commands::Patch(cmd) => cmd.execute(env).await,
+            Commands::List(cmd) => cmd.execute(env).await,
+            Commands::Wardrobe(args) => args.execute(env).await,
+            Commands::Travel(args) => args.execute(env).await,
+            Commands::Tag(args) => args.execute(env).await,
         }
     }
 }

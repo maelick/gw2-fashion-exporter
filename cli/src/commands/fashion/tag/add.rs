@@ -1,4 +1,4 @@
-use crate::commands::{self, args::DataFormat, fashion::args::FashionIdentifier};
+use crate::{commands::{self, args::DataFormat, fashion::args::FashionIdentifier}, environment::Environment};
 
 #[derive(clap::Args, Debug)]
 pub struct Command {
@@ -25,7 +25,7 @@ impl commands::Command for Command {
 
 impl Command {
     #[tracing::instrument(name = "fashion-tag-add", skip_all)]
-    pub async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self, _env: Environment) -> anyhow::Result<()> {
         todo!()
     }
 }

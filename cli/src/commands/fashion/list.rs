@@ -1,4 +1,7 @@
-use crate::commands::{self, args::DataFormat};
+use crate::{
+    commands::{self, args::DataFormat},
+    environment::Environment,
+};
 
 #[derive(clap::Args, Debug)]
 pub struct Command {
@@ -22,7 +25,7 @@ impl commands::Command for Command {
 
 impl Command {
     #[tracing::instrument(name = "fashion-list", skip_all)]
-    pub async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self, _env: Environment) -> anyhow::Result<()> {
         todo!()
     }
 }

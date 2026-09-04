@@ -1,4 +1,4 @@
-use crate::commands::Command;
+use crate::{commands::Command, environment::Environment};
 
 mod add;
 mod clean;
@@ -21,12 +21,12 @@ impl Args {
         }
     }
 
-    pub async fn execute(&self) -> anyhow::Result<()> {
+    pub async fn execute(&self, env: Environment) -> anyhow::Result<()> {
         match &self.command {
-            Commands::List(cmd) => cmd.execute().await,
-            Commands::Clean(cmd) => cmd.execute().await,
-            Commands::Add(cmd) => cmd.execute().await,
-            Commands::Remove(cmd) => cmd.execute().await,
+            Commands::List(cmd) => cmd.execute(env).await,
+            Commands::Clean(cmd) => cmd.execute(env).await,
+            Commands::Add(cmd) => cmd.execute(env).await,
+            Commands::Remove(cmd) => cmd.execute(env).await,
         }
     }
 }

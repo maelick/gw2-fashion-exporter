@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use async_trait::async_trait;
 use gw2fashionista_core::{
     domain::{fashion::Fashion, filters::StringFilters, tag::Tag},
@@ -6,14 +8,25 @@ use gw2fashionista_core::{
 use sqlx::{
     QueryBuilder, Sqlite, SqliteConnection, SqlitePool, Transaction,
     pool::PoolConnection,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
     types::{chrono, uuid},
 };
 
 mod error;
 mod models;
 
+static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!();
+
+#[derive(Debug, Clone)]
 pub struct Repository {
     pool: SqlitePool,
+}
+
+pub async fn init(url: &str) -> sqlx::Result<SqlitePool> {
+    let opts = SqliteConnectOptions::from_str(url)?.create_if_missing(true);
+    let pool = SqlitePoolOptions::new().connect_with(opts).await?;
+    MIGRATOR.run(&pool).await?;
+    Ok(pool)
 }
 
 impl Repository {

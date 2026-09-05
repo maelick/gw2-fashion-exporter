@@ -1,4 +1,7 @@
-use crate::{commands::{self, args::DataFormat}, environment::Environment};
+use crate::{
+    commands::{self, args::DataFormat},
+    environment::Environment,
+};
 
 #[derive(clap::Args, Debug)]
 pub struct Command {

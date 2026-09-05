@@ -1,4 +1,7 @@
-use crate::{commands::{self, args::ChatLinkFormat, fashion::args::FashionIdentifier}, environment::Environment};
+use crate::{
+    commands::{self, args::ChatLinkFormat, fashion::args::FashionIdentifier},
+    environment::Environment,
+};
 
 #[derive(clap::Args, Debug)]
 #[command(mut_group("identifier", |g| g.required(true)))]

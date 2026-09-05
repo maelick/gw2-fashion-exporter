@@ -1,4 +1,7 @@
-use crate::{commands::{self, args::DataFormat, fashion::args::FashionFields}, environment::Environment};
+use crate::{
+    commands::{self, args::DataFormat, fashion::args::FashionFields},
+    environment::Environment,
+};
 
 #[derive(clap::Args, Debug)]
 pub struct Command {
@@ -21,7 +24,10 @@ impl commands::Command for Command {
 
 impl Command {
     #[tracing::instrument(name = "fashion-create", skip_all)]
-    pub async fn execute(&self, _env: Environment) -> anyhow::Result<()> {
-        todo!()
+    pub async fn execute(&self, mut env: Environment) -> anyhow::Result<()> {
+        let service = env.fashion_service().await?;
+        let fashion = (&self.data).try_into()?;
+        service.create(&fashion).await?;
+        Ok(())
     }
 }

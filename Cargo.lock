@@ -595,6 +595,7 @@ version = "0.0.0"
 dependencies = [
  "assert_cmd",
  "csv",
+ "gw2fashionista-chatlink",
  "gw2fashionista-cli",
  "gw2fashionista-fixtures",
  "insta",
@@ -921,6 +922,7 @@ dependencies = [
  "gw2fashionista-fixtures",
  "linearize",
  "num_enum",
+ "regex",
  "serde",
  "strum",
  "strum_macros",

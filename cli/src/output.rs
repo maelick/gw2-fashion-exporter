@@ -30,9 +30,15 @@ impl<'a, T: Serialize> OneOrMany<'a, T> {
         dest: W,
         pretty: bool,
     ) -> anyhow::Result<()> {
-        match format {
-            Format::Csv => output_csv(self, dest),
-            Format::Json => output_json(self, dest, pretty),
+        match self {
+            OneOrMany::One(data) => match format {
+                Format::Csv => output_csv(data, dest),
+                Format::Json => output_json(data, dest, pretty),
+            },
+            OneOrMany::Many(data) => match format {
+                Format::Csv => output_csv(data, dest),
+                Format::Json => output_json(data, dest, pretty),
+            },
         }
     }
 }

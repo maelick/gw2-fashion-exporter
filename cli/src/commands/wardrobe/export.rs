@@ -4,9 +4,9 @@ use gw2fashionista_chatlink::ChatLinkError;
 use serde::{Deserialize, Serialize};
 use std::{fs, io};
 
-use crate::commands;
 use crate::commands::args;
 use crate::commands::wardrobe::args::WardrobeFilters;
+use crate::{commands, output};
 
 #[derive(Args, Debug)]
 pub struct Command {
@@ -82,25 +82,11 @@ impl Command {
 
     fn output_equipments(&self, equipments: Vec<ExportedEquipment>) -> anyhow::Result<()> {
         let format = match self.format {
-            args::DataFormat::Auto => self.detect_format(),
-            _ => self.format,
+            args::DataFormat::Auto => output::detect_format(self.output.as_ref()),
+            args::DataFormat::Csv => output::Format::Csv,
+            args::DataFormat::Json => output::Format::Json,
         };
-        match format {
-            args::DataFormat::Csv => self.output_csv(equipments)?,
-            args::DataFormat::Json => self.output_json(equipments)?,
-            _ => todo!(),
-        };
-        Ok(())
-    }
-
-    fn detect_format(&self) -> args::DataFormat {
-        match &self.output {
-            Some(path) => match path.extension() {
-                Some(ext) if ext == "json" => args::DataFormat::Json,
-                _ => args::DataFormat::Csv,
-            },
-            None => args::DataFormat::Csv,
-        }
+        output::OneOrMany::Many(&equipments).output(format, self.open_output()?, false)
     }
 
     fn open_output(&self) -> anyhow::Result<Box<dyn io::Write>> {
@@ -108,19 +94,6 @@ impl Command {
             .as_ref()
             .map(open_file)
             .unwrap_or_else(|| Ok(Box::new(io::stdout())))
-    }
-
-    fn output_csv(&self, equipments: Vec<ExportedEquipment>) -> anyhow::Result<()> {
-        let mut writer = csv::Writer::from_writer(self.open_output()?);
-        for e in equipments {
-            writer.serialize(e)?;
-        }
-        Ok(())
-    }
-
-    fn output_json(&self, equipments: Vec<ExportedEquipment>) -> anyhow::Result<()> {
-        serde_json::to_writer_pretty(self.open_output()?, &equipments)?;
-        Ok(())
     }
 }
 

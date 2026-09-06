@@ -4,8 +4,9 @@ use gw2fashionista_appearance::models::template::TemplateData;
 use gw2fashionista_chatlink::templates::FashionSlot;
 use gw2fashionista_chatlink::templates::travel::TravelTemplate;
 use gw2fashionista_chatlink::{ChatLink, ChatLinkError, templates::wardrobe::WardrobeTemplate};
-use serde::Serialize;
 use std::{io, iter};
+
+use crate::output;
 
 #[derive(Args, Debug)]
 pub struct Command {
@@ -170,7 +171,7 @@ impl Command {
             &resolver.resolve_template(template).await?
         };
 
-        print(data, self.pretty)
+        output::OneOrMany::One(&data).print(output::Format::Json, self.pretty)
     }
 }
 
@@ -192,15 +193,6 @@ fn travel_templates(chat_links: &[ChatLink]) -> Vec<&TravelTemplate> {
             _ => None,
         })
         .collect()
-}
-
-fn print<S: FashionSlot + Serialize>(data: &TemplateData<S>, pretty: bool) -> anyhow::Result<()> {
-    if pretty {
-        serde_json::to_writer_pretty(io::stdout(), data)?;
-    } else {
-        serde_json::to_writer(io::stdout(), data)?;
-    }
-    Ok(())
 }
 
 fn collect_lenient<V, T, E, I, F>(iter: I, on_error: F) -> Result<Vec<T>, E>

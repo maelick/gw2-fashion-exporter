@@ -942,6 +942,7 @@ dependencies = [
  "clap-verbosity-flag",
  "csv",
  "env_logger",
+ "futures",
  "gw2fashionista-appearance",
  "gw2fashionista-chatlink",
  "gw2fashionista-core",

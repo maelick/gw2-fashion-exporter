@@ -1,6 +1,17 @@
+use std::io;
+
+use futures::StreamExt;
+use futures::stream::FuturesOrdered;
+use gw2fashionista_core::{
+    app::{FashionError, FashionService},
+    domain::fashion::Fashion,
+};
+use gw2fashionista_storage::sqlite;
+
 use crate::{
     commands::{self, args::DataFormat, fashion::args::FashionFields},
     environment::Environment,
+    input, output,
 };
 
 #[derive(clap::Args, Debug)]
@@ -26,8 +37,128 @@ impl Command {
     #[tracing::instrument(name = "fashion-create", skip_all)]
     pub async fn execute(&self, mut env: Environment) -> anyhow::Result<()> {
         let service = env.fashion_service().await?;
-        let fashion = (&self.data).try_into()?;
-        service.create(&fashion).await?;
-        Ok(())
+        let (fashions, format) = self.read_templates()?;
+        let format = match format {
+            input::Format::Csv => output::Format::Csv,
+            _ => output::Format::Json,
+        };
+        match fashions {
+            input::OneOrMany::One(fashion) => create_one_and_print(&service, fashion, format).await,
+            input::OneOrMany::Many(fashions) => {
+                create_many_and_print(&service, fashions, format).await
+            }
+        }
     }
+
+    fn read_templates(&self) -> anyhow::Result<(input::OneOrMany<Fashion>, input::Format)> {
+        let mut stdin = io::stdin().lock();
+        let (fashions, format) = input::read_templates::<Fashion, _>(&mut stdin)?;
+        let fashions = match fashions {
+            input::Input::None => input::OneOrMany::One((&self.data).try_into()?),
+            input::Input::Zero => input::OneOrMany::Many(Vec::new()),
+            input::Input::One(fashion) => input::OneOrMany::One(self.merge_fashion(fashion)?),
+            input::Input::Many(fashions) => input::OneOrMany::Many(self.merge_tags(fashions)?),
+        };
+        Ok((fashions, format))
+    }
+
+    fn merge_fashion(&self, mut fashion: Fashion) -> anyhow::Result<Fashion> {
+        if let Some(name) = &self.data.name {
+            fashion.name = name.clone();
+        }
+        if let Some(description) = &self.data.description {
+            fashion.description = Some(description.clone());
+        }
+        if let Some(character) = &self.data.character {
+            fashion.character = Some(character.clone());
+        }
+        if let Some(wardrobe_template) = &self.data.wardrobe {
+            fashion.wardrobe_template = Some(wardrobe_template.clone());
+        }
+        if let Some(travel_template) = &self.data.travel {
+            fashion.travel_template = Some(travel_template.clone());
+        }
+        self.ensure_tags(fashion)
+    }
+
+    fn ensure_tags(&self, mut fashion: Fashion) -> anyhow::Result<Fashion> {
+        for tag in &self.data.tags {
+            if !fashion.tags.contains(tag) {
+                fashion.tags.push(tag.clone());
+            }
+        }
+        Ok(fashion)
+    }
+
+    fn merge_tags(&self, mut fashions: Vec<Fashion>) -> anyhow::Result<Vec<Fashion>> {
+        for fashion in &mut fashions {
+            *fashion = self.ensure_tags(fashion.clone())?;
+        }
+        Ok(fashions)
+    }
+}
+
+async fn create_one_and_print(
+    service: &FashionService<sqlite::Repository>,
+    fashion: Fashion,
+    format: output::Format,
+) -> anyhow::Result<()> {
+    let created = service.create(&fashion).await?;
+    output::OneOrMany::One(&created).print(format, true)
+}
+
+async fn create_many_and_print(
+    service: &FashionService<sqlite::Repository>,
+    fashions: Vec<Fashion>,
+    format: output::Format,
+) -> anyhow::Result<()> {
+    let (created, failed) = create_many(service, fashions).await;
+    output::OneOrMany::Many(&created).print(format, false)?;
+    anyhow::ensure!(
+        failed.is_empty(),
+        "Failed to create {} fashions",
+        failed.len()
+    );
+    Ok(())
+}
+
+async fn create_many(
+    service: &FashionService<sqlite::Repository>,
+    fashions: Vec<Fashion>,
+) -> (Vec<Fashion>, Vec<FashionError>) {
+    partition_result(FuturesOrdered::from_iter(
+        fashions
+            .into_iter()
+            .map(async |fashion| create_one(service, fashion).await),
+    ))
+    .await
+}
+
+async fn partition_result<T, E>(
+    result_stream: impl futures::Stream<Item = Result<T, E>>,
+) -> (Vec<T>, Vec<E>) {
+    result_stream
+        .fold(
+            (Vec::new(), Vec::new()),
+            async |(mut created, mut failed), res| {
+                match res {
+                    Ok(fashion) => created.push(fashion),
+                    Err(err) => failed.push(err),
+                }
+                (created, failed)
+            },
+        )
+        .await
+}
+
+async fn create_one(
+    service: &FashionService<sqlite::Repository>,
+    fashion: Fashion,
+) -> Result<Fashion, FashionError> {
+    let res = service.create(&fashion).await;
+    match &res {
+        Ok(fashion) => tracing::info!("Created fashion: {:?}", fashion),
+        Err(err) => tracing::error!("Failed to create fashion: {:?}", err),
+    }
+    res
 }

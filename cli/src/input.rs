@@ -60,11 +60,13 @@ impl<T> From<Input<T>> for Vec<T> {
     }
 }
 
-pub fn read_templates<T, R: io::BufRead>(reader: &mut R) -> anyhow::Result<(Input<T>, Format)>
+pub fn read_templates<T, R: io::BufRead>(
+    reader: &mut R,
+    format: Format,
+) -> anyhow::Result<(Input<T>, Format)>
 where
     T: serde::de::DeserializeOwned,
 {
-    let (format, reader) = detect_format(reader)?;
     Ok((
         match format {
             Format::Json => Input::from_json(reader)?,

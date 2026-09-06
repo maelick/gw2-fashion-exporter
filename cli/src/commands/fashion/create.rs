@@ -51,8 +51,7 @@ impl Command {
     }
 
     fn read_templates(&self) -> anyhow::Result<(input::OneOrMany<Fashion>, input::Format)> {
-        let mut stdin = io::stdin().lock();
-        let (fashions, format) = input::read_templates::<Fashion, _>(&mut stdin)?;
+        let (fashions, format) = self.read_templates_from_stdin()?;
         let fashions = match fashions {
             input::Input::None => input::OneOrMany::One((&self.data).try_into()?),
             input::Input::Zero => input::OneOrMany::Many(Vec::new()),
@@ -60,6 +59,20 @@ impl Command {
             input::Input::Many(fashions) => input::OneOrMany::Many(self.merge_tags(fashions)?),
         };
         Ok((fashions, format))
+    }
+
+    fn read_templates_from_stdin(&self) -> anyhow::Result<(input::Input<Fashion>, input::Format)> {
+        let mut stdin = io::stdin().lock();
+        match self.format {
+            DataFormat::Auto => {
+                let (format, mut reader) = input::detect_format(&mut stdin)?;
+                input::read_templates::<Fashion, _>(&mut reader, format)
+            }
+            DataFormat::Csv => input::read_templates::<Fashion, _>(&mut stdin, input::Format::Csv),
+            DataFormat::Json => {
+                input::read_templates::<Fashion, _>(&mut stdin, input::Format::Json)
+            }
+        }
     }
 
     fn merge_fashion(&self, mut fashion: Fashion) -> anyhow::Result<Fashion> {
